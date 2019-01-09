@@ -569,40 +569,77 @@ C Determine area of each output grid box
       end
 
 
+      subroutine readnumpart(filename, itime, numpart)
 
-
-
-      subroutine readparticles(filename,npart,nspec,dx,dy,xlon0, ylat0,
-     +                         partpositions,xmass,ipoint)
-
-      character filename*250
+      character :: filename*256
 Cf2py intent(in) filename
 
-      integer :: i
-      real, dimension(npart, nspec) :: xmass
-      integer, dimension(npart) :: ipoint
-      real, dimension(npart, 11) :: partpositions
-Cf2py intent(out) partpositions
+      integer :: i, kret
+
+Cf2py intent(out) itime
+Cf2py intent(out) numpart
+      integer :: itime, numpart
+
+      open(10,file=filename,status='unknown',form='unformatted')
+
+      read(10) itime
+
+!     number of particles
+      kret=0
+      numpart=0
+      do while (kret.eq.0)
+         read(10, iostat=kret)
+         if (kret.ne.0) exit
+         numpart=numpart+1
+      end do
+!     exclude the final dummy record
+      numpart=numpart-1
+
+      close(10)
+
+      end
+
+      subroutine readparticles(filename,numpart,nspec,itime,npoint,
+     +xlon,ylat,z,itramem,topo,pv,qv,rho,hmix,tr,tt,xmass)
+
+      character :: filename*256
+      integer :: numpart, nspec
+Cf2py intent(in) filename
+Cf2py intent(in) numpart
+Cf2py intent(in) nspec
+
+      integer :: i, kret
+
+      integer :: itime
+      integer :: npoint(numpart), itramem(numpart)
+      real :: xlon(numpart), ylat(numpart), z(numpart)
+      real :: topo(numpart), pv(numpart), qv(numpart), tt(numpart)
+      real :: rho(numpart), hmix(numpart), tr(numpart)
+      real :: xmass(numpart,nspec)
+Cf2py intent(out) itime
+Cf2py intent(out) npoint
+Cf2py intent(out) itramem
+Cf2py intent(out) xlon
+Cf2py intent(out) ylat
+Cf2py intent(out) z
+Cf2py intent(out) topo
+Cf2py intent(out) pv
+Cf2py intent(out) qv
+Cf2py intent(out) tt
+Cf2py intent(out) rho
+Cf2py intent(out) hmix
+Cf2py intent(out) tr
 Cf2py intent(out) xmass
-Cf2py intent(out) ipoint
-      open(10,file=filename,
-     +status='unknown',form='unformatted')
+      open(10,file=filename,status='unknown',form='unformatted')
 
-100   read(10,end=99) itimein
-      write(*, *) itimein
-      i=0
-200   i=i+1
+      read(10) itime
 
-      read(10) ipoint(i), (partpositions(i,j),j=1,11),
-     +                        (xmass(i,j),j=1,nspec)
-!     read(10) rnpoint,rxlonin,rylatin,rztraj,itramem,
-!     +topo,rpvi,rqvi,rhoi,rhmixi,tri,tti,(xmass(i,j),j=1,nspec)
-
-      if (partpositions(i,2).eq.-9999.9) goto 100
-
-      goto 200
-
-99    numpart=i-1
+!     read the records
+      do i=1,numpart
+         read(10) npoint(i),xlon(i),ylat(i),z(i),itramem(i),topo(i),
+     +    pv(i),qv(i),rho(i),hmix(i),tr(i),tt(i),
+     +    (xmass(i,j),j=1,nspec)
+      end do
 
       close(10)
 

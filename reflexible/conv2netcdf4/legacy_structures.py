@@ -286,6 +286,10 @@ class Header(Structure):
         """ see :func:`fill_backward` """
         reflexible.conv2netcdf4.fill_grids(self, **kwargs)
 
+    def read_particles(self, **kwargs):
+        """ see :func:`read_particles` """
+        self.particles = reflexible.conv2netcdf4.read_particles(self, **kwargs)
+
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
         self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
